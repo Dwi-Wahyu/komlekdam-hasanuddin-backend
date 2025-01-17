@@ -1,0 +1,78 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model artikel {
+  id          String    @id @default(uuid())
+  nomor       Int       @unique @default(autoincrement())
+  title       String
+  content     String    @db.LongText()
+  createdAt   DateTime  @default(now())
+  pengguna    pengguna? @relation(fields: [id_pengguna], references: [id])
+  thumbnail   String?
+  like        Int       @default(0)
+  dislike     Int       @default(0)
+  id_pengguna String?
+}
+
+model galeri {
+  id         String   @id @default(uuid())
+  urutan     Int      @unique @default(autoincrement())
+  path       String
+  tampilkan  Boolean  @default(false)
+  uploadedAt DateTime @default(now())
+}
+
+model struktur {
+  id        String @id @default(uuid())
+  urutan    Int    @unique @default(autoincrement())
+  nama      String @unique
+  gambar    String
+  deskripsi String
+}
+
+model pengguna {
+  id       String    @id @default(uuid())
+  nomor    Int       @unique @default(autoincrement())
+  username String    @unique
+  password String    @unique
+  artikel  artikel[]
+}
+
+model kata_sambutan {
+  id      String @id @default(uuid())
+  content String @db.Text
+}
+
+model program_acara {
+  id        String   @id @default(uuid())
+  judul     String   @unique
+  mulai     String
+  selesai   String
+  startTime DateTime
+}
+
+model statistik {
+  id             String           @id @default(uuid())
+  nama_statistik String           @unique
+  data           data_statistik[]
+}
+
+model data_statistik {
+  id           String     @id @default(uuid())
+  kategori     String     @unique
+  persentase   String
+  statistik    statistik? @relation(fields: [id_statistik], references: [id])
+  id_statistik String?
+}

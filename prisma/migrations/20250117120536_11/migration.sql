@@ -1,0 +1,6 @@
+-- AlterTable
+ALTER TABLE `artikel` ADD COLUMN `dislike` INTEGER NOT NULL DEFAULT 0,
+    ADD COLUMN `like` INTEGER NOT NULL DEFAULT 0;
+
+-- AlterTable
+ALTER TABLE `galeri` ADD COLUMN `tampilkan` BOOLEAN NOT NULL DEFAULT false;
