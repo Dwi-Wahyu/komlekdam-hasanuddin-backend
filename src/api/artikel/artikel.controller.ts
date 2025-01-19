@@ -53,6 +53,18 @@ export class ArtikelController {
     return this.artikelService.update(id, updateArtikelDto);
   }
 
+  @Public()
+  @Patch('/like/:id')
+  handleLike(@Param('id') id: string) {
+    return this.artikelService.handleLike(id);
+  }
+
+  @Public()
+  @Patch('/dislike/:id')
+  handleDislike(@Param('id') id: string) {
+    return this.artikelService.handleDislike(id);
+  }
+
   @Patch('/ganti-thumbnail/:id')
   @UseInterceptors(FileInterceptor('thumbnail'))
   updatePhoto(

@@ -122,6 +122,52 @@ export class ArtikelService {
     }
   }
 
+  async handleLike(id: string) {
+    try {
+      const artikel = await this.prismaService.artikel.update({
+        where: {
+          id,
+        },
+        data: {
+          like: {
+            increment: 1,
+          },
+        },
+      });
+
+      log(artikel);
+
+      return `Like Count : ${artikel.like}`;
+    } catch (error) {
+      log(error);
+
+      throw new InternalServerErrorException(error);
+    }
+  }
+
+  async handleDislike(id: string) {
+    try {
+      const artikel = await this.prismaService.artikel.update({
+        where: {
+          id,
+        },
+        data: {
+          dislike: {
+            increment: 1,
+          },
+        },
+      });
+
+      log(artikel);
+
+      return `Dislike Count : ${artikel.dislike}`;
+    } catch (error) {
+      log(error);
+
+      throw new InternalServerErrorException(error);
+    }
+  }
+
   async updatePhoto(
     id: string,
     body: { previousPhotoPath: string },
