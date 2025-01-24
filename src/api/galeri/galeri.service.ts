@@ -4,6 +4,8 @@ import {
   UploadedFile,
 } from '@nestjs/common';
 import { log } from 'console';
+import { unlinkSync } from 'fs';
+import { join } from 'path';
 import { DatatableQuery } from 'src/common/types/datatable.query.types';
 import { PrismaService } from 'src/prisma/prisma.service';
 
@@ -102,7 +104,9 @@ export class GaleriService {
         },
       });
 
-      log(deleteData);
+      const path = join(process.cwd(), 'public', 'galeri', deleteData.path);
+
+      unlinkSync(path);
 
       return 'Berhasil delete data';
     } catch (error) {
