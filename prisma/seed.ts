@@ -13,8 +13,6 @@ async function main() {
       },
     });
 
-    log(kataSambutan);
-
     const hashedPassword = await hashSync('secret', 10);
 
     const createSuperadmin = await prisma.pengguna.create({
@@ -23,8 +21,6 @@ async function main() {
         password: hashedPassword,
       },
     });
-
-    log(createSuperadmin);
   } catch (error) {
     log(error);
   }

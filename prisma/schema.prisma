@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -17,21 +11,33 @@ model artikel {
   id          String    @id @default(uuid())
   nomor       Int       @unique @default(autoincrement())
   title       String
-  content     String    @db.LongText()
+  content     String    @db.LongText
   createdAt   DateTime  @default(now())
-  pengguna    pengguna? @relation(fields: [id_pengguna], references: [id])
-  thumbnail   String?
-  like        Int       @default(0)
-  dislike     Int       @default(0)
   id_pengguna String?
+  thumbnail   String?
+  dislike     Int       @default(0)
+  like        Int       @default(0)
+  pengguna    pengguna? @relation(fields: [id_pengguna], references: [id])
+
+  @@index([id_pengguna], map: "artikel_id_pengguna_fkey")
+}
+
+model komentar {
+  id          String        @id @default(uuid())
+  nama        String
+  isi         String
+  like        Int           @default(0)
+  dislike     Int           @default(0)
+  createdAt   DateTime      @default(now())
+  subkomentar subkomentar[]
 }
 
 model galeri {
   id         String   @id @default(uuid())
   urutan     Int      @unique @default(autoincrement())
   path       String
-  tampilkan  Boolean  @default(false)
   uploadedAt DateTime @default(now())
+  tampilkan  Boolean  @default(false)
 }
 
 model struktur {
@@ -73,6 +79,22 @@ model data_statistik {
   id           String     @id @default(uuid())
   kategori     String     @unique
   persentase   String
-  statistik    statistik? @relation(fields: [id_statistik], references: [id])
   id_statistik String?
+  statistik    statistik? @relation(fields: [id_statistik], references: [id])
+
+  @@index([id_statistik], map: "data_statistik_id_statistik_fkey")
+}
+
+model subkomentar {
+  id          String    @id
+  nama        String
+  isi         String
+  like        Int       @default(0)
+  dislike     Int       @default(0)
+  createdAt   DateTime  @default(now())
+  id_komentar String?
+  replyTo     String
+  komentar    komentar? @relation(fields: [id_komentar], references: [id])
+
+  @@index([id_komentar], map: "subkomentar_id_komentar_fkey")
 }

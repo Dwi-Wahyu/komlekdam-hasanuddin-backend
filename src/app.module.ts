@@ -15,6 +15,7 @@ import { StrukturModule } from './api/struktur/struktur.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 import { StatistikModule } from './api/statistik/statistik.module';
+import { KomentarModule } from './api/komentar/komentar.module';
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { StatistikModule } from './api/statistik/statistik.module';
     ProgramAcaraModule,
     StrukturModule,
     StatistikModule,
+    KomentarModule,
   ],
   controllers: [AppController, AuthController],
   providers: [AppService, AuthService, PrismaService],
