@@ -1,31 +1,39 @@
+import { configDotenv } from 'dotenv';
+
+configDotenv();
+
 import { PrismaClient } from '@prisma/client';
-import { log } from 'console';
-import { content } from './data';
-import { hashSync } from 'bcrypt';
-
 const prisma = new PrismaClient();
-
 async function main() {
-  try {
-    const kataSambutan = await prisma.kata_sambutan.create({
-      data: {
-        content,
-      },
-    });
+  const superadminUsername = process.env.SUPERADMIN_USERNAME;
+  const superadminPassword = process.env.SUPERADMIN_PASSWORD;
 
-    const hashedPassword = await hashSync('secret', 10);
+  const createSuperadmin = await prisma.pengguna.upsert({
+    where: {
+      username: superadminUsername,
+    },
+    update: {},
+    create: {
+      nama: 'superadmin',
+      username: superadminUsername as string,
+      password: superadminPassword as string,
+    },
+  });
 
-    const createSuperadmin = await prisma.pengguna.create({
-      data: {
-        username: 'superadmin',
-        password: hashedPassword,
-      },
-    });
-  } catch (error) {
-    log(error);
-  }
+  const dataLainnya = await prisma.data_lainnya.upsert({
+    where: {
+      nomor: 1,
+    },
+    update: {},
+    create: {
+      label: 'link-streaming',
+      value: 'https://www.youtube.com/watch?v=PvpTcaHTpHw',
+    },
+  });
+
+  console.log(createSuperadmin);
+  console.log(dataLainnya);
 }
-
 main()
   .then(async () => {
     await prisma.$disconnect();

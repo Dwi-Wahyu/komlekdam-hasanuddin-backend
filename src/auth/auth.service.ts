@@ -33,26 +33,14 @@ export class AuthService {
   async handleLogin(loginData: SignInDto) {
     const { username, password } = loginData;
 
-    if (!username || !password) {
-      throw new BadRequestException('Please insert username or password');
-    }
-
     const pengguna = await this.prismaService.pengguna.findFirst({
       where: {
         username,
+        password,
       },
     });
 
     if (!pengguna) {
-      throw new UnauthorizedException('Username atau Password salah');
-    }
-
-    const passwordValid = await this.comparePassword(
-      password,
-      pengguna.password,
-    );
-
-    if (!passwordValid) {
       throw new UnauthorizedException('Username atau Password salah');
     }
 

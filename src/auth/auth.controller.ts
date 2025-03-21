@@ -1,10 +1,9 @@
 import {
   Body,
   Controller,
-  HttpException,
-  HttpStatus,
   Post,
-  Res,
+  UsePipes,
+  ValidationPipe,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { SignInDto } from './dto/sigin.dto';
@@ -16,6 +15,7 @@ export class AuthController {
 
   @Public()
   @Post('login')
+  @UsePipes(new ValidationPipe())
   async handleLogin(@Body() loginData: SignInDto) {
     return this.authService.handleLogin(loginData);
   }

@@ -1,11 +1,11 @@
 import { IsNotEmpty, IsString } from 'class-validator';
 
-export class SignInDto {
-  @IsNotEmpty()
+export class CreateKepalaDto {
   @IsString()
-  readonly username: string;
+  @IsNotEmpty()
+  readonly nama: string;
 
-  @IsNotEmpty()
   @IsString()
-  readonly password: string;
+  @IsNotEmpty()
+  readonly jabatan: string;
 }

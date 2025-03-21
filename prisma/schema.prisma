@@ -7,94 +7,100 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model artikel {
-  id          String    @id @default(uuid())
-  nomor       Int       @unique @default(autoincrement())
-  title       String
-  content     String    @db.LongText
-  createdAt   DateTime  @default(now())
-  id_pengguna String?
-  thumbnail   String?
-  dislike     Int       @default(0)
-  like        Int       @default(0)
-  pengguna    pengguna? @relation(fields: [id_pengguna], references: [id])
-
-  @@index([id_pengguna], map: "artikel_id_pengguna_fkey")
+model laporan {
+  id    String @id @default(uuid())
+  nama  String
+  email String
+  pesan String
 }
 
-model komentar {
-  id          String        @id @default(uuid())
-  nama        String
-  isi         String
-  like        Int           @default(0)
-  dislike     Int           @default(0)
-  createdAt   DateTime      @default(now())
-  subkomentar subkomentar[]
-}
-
-model galeri {
-  id         String   @id @default(uuid())
-  urutan     Int      @unique @default(autoincrement())
-  path       String
-  uploadedAt DateTime @default(now())
-  tampilkan  Boolean  @default(false)
-}
-
-model struktur {
-  id        String @id @default(uuid())
-  urutan    Int    @unique @default(autoincrement())
-  nama      String @unique
-  gambar    String
-  deskripsi String
+model data_lainnya {
+  nomor Int    @id @default(autoincrement())
+  label String @unique
+  value String
 }
 
 model pengguna {
-  id       String    @id @default(uuid())
-  nomor    Int       @unique @default(autoincrement())
-  username String    @unique
-  password String    @unique
-  artikel  artikel[]
+  id       String @id @default(uuid())
+  username String @unique
+  nama     String
+  password String
+
+  berita_terakhir_diupdate berita[] @relation(name: "berita_terakhir_diupdate")
 }
 
-model kata_sambutan {
+model berita {
+  id                       String    @id @default(uuid())
+  judul                    String
+  penulis                  String
+  lokasi                   String
+  deskripsi                String
+  tanggal                  String
+  kategori                 String
+  detail                   String    @db.Text
+  thumbnailPath            String
+  createdAt                DateTime  @default(now())
+  updatedAt                DateTime  @updatedAt()
+  last_updated_by          pengguna? @relation(name: "berita_terakhir_diupdate", fields: [last_updated_by_username], references: [username])
+  last_updated_by_username String?
+}
+
+model program {
+  id            String                @id @default(uuid())
+  judul         String
+  deskripsi     String
+  tanggal       String
+  kategori      String
+  detail        String                @db.Text
+  thumbnailPath String
+  dokumentasi   dokumentasi_program[]
+}
+
+model dokumentasi_program {
+  nomor      Int      @id @default(autoincrement())
+  path       String
+  program    program? @relation(fields: [id_program], references: [id])
+  id_program String?
+}
+
+model kakomlekdam {
+  nomor   Int    @id @default(autoincrement())
+  nama    String
+  pasfoto String
+}
+
+model wakakomlekdam {
+  nomor   Int    @id @default(autoincrement())
+  nama    String
+  pasfoto String
+}
+
+model pejabat_satuan {
+  nomor   Int    @id @default(autoincrement())
+  nama    String
+  pasfoto String
+  jabatan String
+}
+
+model kakomlekdam_lampau {
   id      String @id @default(uuid())
-  content String @db.Text
+  nama    String
+  jabatan String
+  periode String
+  pasfoto String
 }
 
-model program_acara {
-  id        String   @id @default(uuid())
-  judul     String   @unique
-  mulai     String
-  selesai   String
-  startTime DateTime
-}
-
-model statistik {
-  id             String           @id @default(uuid())
-  nama_statistik String           @unique
-  data           data_statistik[]
-}
-
-model data_statistik {
-  id           String     @id @default(uuid())
-  kategori     String     @unique
-  persentase   String
-  id_statistik String?
-  statistik    statistik? @relation(fields: [id_statistik], references: [id])
-
-  @@index([id_statistik], map: "data_statistik_id_statistik_fkey")
-}
-
-model subkomentar {
-  id          String    @id
+model mitra {
+  nomor       Int                 @id @default(autoincrement())
   nama        String
-  isi         String
-  like        Int       @default(0)
-  dislike     Int       @default(0)
-  createdAt   DateTime  @default(now())
-  id_komentar String?
-  replyTo     String
-  komentar    komentar? @relation(fields: [id_komentar], references: [id])
+  logoPath    String
+  dokumentasi dokumentasi_mitra[]
+}
 
-  @@index([id_komentar], map: "subkomentar_id_komentar_fkey")
+model dokumentasi_mitra {
+  nomor             Int    @id @default(autoincrement())
+  judul_keterangan  String
+  narasi_keterangan String
+  mitra             mitra? @relation(fields: [mitraNomor], references: [nomor])
+  mitraNomor        Int?
 }
