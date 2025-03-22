@@ -14,6 +14,7 @@ import { ProgramModule } from './api/program/program.module';
 import { PejabatModule } from './api/pejabat/pejabat.module';
 import { KepalaSatuanLampauModule } from './api/kepala-satuan-lampau/kepala-satuan-lampau.module';
 import { MitraModule } from './api/mitra/mitra.module';
+import { ConfigModule } from '@nestjs/config';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { MitraModule } from './api/mitra/mitra.module';
     PejabatModule,
     KepalaSatuanLampauModule,
     MitraModule,
+    ConfigModule.forRoot(),
   ],
   controllers: [AppController, AuthController],
   providers: [AppService, AuthService, PrismaService],

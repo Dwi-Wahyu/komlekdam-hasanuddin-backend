@@ -3,6 +3,8 @@
 /node_modules
 /build
 
+credentials.txt
+
 # Logs
 logs
 *.log
