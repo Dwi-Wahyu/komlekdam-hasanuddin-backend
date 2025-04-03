@@ -13,10 +13,10 @@ import {
 import { PejabatService } from './pejabat.service';
 import { CreatePejabatDto } from './dto/create-pejabat.dto';
 import { UpdatePejabatDto } from './dto/update-pejabat.dto';
-import { CreateKepalaDto } from './dto/create-kepala.dto';
+import { CreatePimpinanDto } from './dto/create-pimpinan.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { PasfotoValidationPipe } from './pasfoto.validation.pipe';
-import { UpdateKepalaDto } from './dto/update-kepala.dto';
+import { UpdateKepalaDto } from './dto/update-pimpinan.dto';
 import { Public } from 'src/auth/PublicDecorator';
 import { DatatableQuery } from 'src/common/types/datatable.query.types';
 
@@ -34,39 +34,39 @@ export class PejabatController {
   }
 
   @Public()
-  @Get('kepala')
-  getKepala() {
-    return this.pejabatService.getKepala();
+  @Get('pimpinan')
+  getAllPimpinan() {
+    return this.pejabatService.getAllPimpinan();
   }
 
-  @Get('/data')
+  @Get('data')
   findData(@Query() query: DatatableQuery) {
     return this.pejabatService.findData(query);
   }
 
-  @Post('kepala')
+  @Post('pimpinan')
   @UseInterceptors(FileInterceptor('pasfoto'))
-  createKepala(
+  createPimpinan(
     @UploadedFile(new PasfotoValidationPipe()) pasfoto: Express.Multer.File,
-    @Body() createKepalaDto: CreateKepalaDto,
+    @Body() createPimpinanDto: CreatePimpinanDto,
   ) {
-    return this.pejabatService.createKepala(pasfoto, createKepalaDto);
+    return this.pejabatService.createPimpinan(pasfoto, createPimpinanDto);
   }
 
-  @Get('kepala/:jabatan')
-  getOneKepala(@Param('jabatan') jabatan: string) {
-    return this.pejabatService.getOneKepala(jabatan);
+  @Get('pimpinan/:jabatan')
+  getOnePimpinan(@Param('jabatan') jabatan: string) {
+    return this.pejabatService.getOnePimpinan(jabatan);
   }
 
-  @Patch('kepala/:jabatan')
-  updateKepala(
+  @Patch('pimpinan/:jabatan')
+  updatePimpinan(
     @Param('jabatan') jabatan: string,
-    @Body() updateKepalaDto: UpdateKepalaDto,
+    @Body() updatePimpinanDto: UpdateKepalaDto,
   ) {
-    return this.pejabatService.updateKepala(jabatan, updateKepalaDto);
+    return this.pejabatService.updatePimpinan(jabatan, updatePimpinanDto);
   }
 
-  @Post('pasfoto/:id')
+  @Post('ganti-pasfoto/:id')
   @UseInterceptors(FileInterceptor('pasfoto'))
   updatePasfoto(
     @UploadedFile(new PasfotoValidationPipe()) pasfoto: Express.Multer.File,
@@ -75,15 +75,16 @@ export class PejabatController {
     return this.pejabatService.updatePasfoto(+id, pasfoto);
   }
 
-  @Post('kepala/pasfoto/:jabatan')
+  @Post('pimpinan/ganti-pasfoto/:jabatan')
   @UseInterceptors(FileInterceptor('pasfoto'))
-  updatePasfotoKepala(
+  updatePasfotoPimpinan(
     @UploadedFile(new PasfotoValidationPipe()) pasfoto: Express.Multer.File,
     @Param('jabatan') jabatan: string,
   ) {
-    return this.pejabatService.updatePasfotoKepala(jabatan, pasfoto);
+    return this.pejabatService.updatePasfotoPimpinan(jabatan, pasfoto);
   }
 
+  @Public()
   @Get()
   findAll() {
     return this.pejabatService.findAll();

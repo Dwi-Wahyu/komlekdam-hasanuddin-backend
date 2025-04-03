@@ -1,4 +1,9 @@
-import { IsDateString, IsNotEmpty, IsString } from 'class-validator';
+import {
+  IsDateString,
+  IsNotEmpty,
+  IsNumberString,
+  IsString,
+} from 'class-validator';
 
 export class CreateBeritaDto {
   @IsString()
@@ -29,4 +34,8 @@ export class CreateBeritaDto {
   @IsString()
   @IsNotEmpty()
   readonly detail: string;
+
+  @IsString()
+  @IsNotEmpty()
+  readonly publisher_id: string;
 }

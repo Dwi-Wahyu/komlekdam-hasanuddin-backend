@@ -33,24 +33,31 @@ export class AuthService {
   async handleLogin(loginData: SignInDto) {
     const { username, password } = loginData;
 
-    const pengguna = await this.prismaService.pengguna.findFirst({
+    const user = await this.prismaService.user.findFirst({
       where: {
         username,
-        password,
       },
     });
 
-    if (!pengguna) {
+    if (!user) {
+      throw new UnauthorizedException('Username atau Password salah');
+    }
+
+    const passwordValid = await this.comparePassword(password, user.password);
+
+    if (!passwordValid) {
       throw new UnauthorizedException('Username atau Password salah');
     }
 
     return {
       access_token: await this.jwtService.signAsync({
-        username: pengguna.username,
+        username: user.username,
       }),
       user: {
-        id: pengguna.id,
-        username: pengguna.username,
+        id: user.id,
+        username: user.username,
+        role: user.role,
+        nama: user.nama,
       },
     };
   }

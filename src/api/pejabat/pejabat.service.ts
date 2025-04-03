@@ -1,11 +1,11 @@
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { CreatePejabatDto } from './dto/create-pejabat.dto';
 import { UpdatePejabatDto } from './dto/update-pejabat.dto';
-import { CreateKepalaDto } from './dto/create-kepala.dto';
+import { CreatePimpinanDto } from './dto/create-pimpinan.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { unlinkSync, writeFileSync } from 'fs';
 import { extname, join } from 'path';
-import { UpdateKepalaDto } from './dto/update-kepala.dto';
+import { UpdateKepalaDto } from './dto/update-pimpinan.dto';
 import { log } from 'console';
 import { DatatableQuery } from 'src/common/types/datatable.query.types';
 
@@ -20,10 +20,11 @@ export class PejabatService {
     const { originalname, buffer } = pasfoto;
     const { jabatan, nama } = createPejabatDto;
 
+    const relativePasfotoPath = Date.now() + '-' + originalname;
     const absolutePasfotoPath = join(
       process.cwd(),
       'public/profil/pejabat',
-      originalname,
+      relativePasfotoPath,
     );
 
     writeFileSync(absolutePasfotoPath, buffer);
@@ -33,7 +34,7 @@ export class PejabatService {
         data: {
           nama,
           jabatan,
-          pasfoto: originalname,
+          pasfoto: relativePasfotoPath,
         },
       });
 
@@ -79,72 +80,45 @@ export class PejabatService {
     };
   }
 
-  async getOneKepala(jabatan: string) {
+  async getOnePimpinan(jabatan: string) {
     try {
-      if (jabatan === 'kakomlekdam') {
-        const dataKakomlekdam =
-          await this.prismaService.kakomlekdam.findFirst();
+      const pimpinan = await this.prismaService.pimpinan.findFirst({
+        where: {
+          jabatan,
+        },
+      });
 
-        return dataKakomlekdam;
-      } else {
-        const dataWakakomlekdam =
-          await this.prismaService.wakakomlekdam.findFirst();
-
-        return dataWakakomlekdam;
-      }
+      return pimpinan;
     } catch (error) {
       return new InternalServerErrorException(error);
     }
   }
 
-  async createKepala(
+  async createPimpinan(
     pasfoto: Express.Multer.File,
-    createKepalaDto: CreateKepalaDto,
+    createPimpinanDto: CreatePimpinanDto,
   ) {
-    const { originalname, buffer } = pasfoto;
+    try {
+      const { originalname, buffer } = pasfoto;
 
-    const { nama, jabatan } = createKepalaDto;
+      const { nama, jabatan } = createPimpinanDto;
 
-    let filename = jabatan === 'kakomlekdam' ? 'kakomlekdam' : 'wakakomlekdam';
-    filename = filename + extname(originalname);
-    const absolutePath = join(process.cwd(), 'public/profil', filename);
+      const filename = jabatan + extname(originalname);
+      const absolutePath = join(process.cwd(), 'public/profil', filename);
 
-    writeFileSync(absolutePath, buffer);
-
-    if (jabatan == 'kakomlekdam') {
-      const createKakomlekdam = await this.prismaService.kakomlekdam.create({
+      const pimpinan = await this.prismaService.pimpinan.create({
         data: {
           nama,
           pasfoto: filename,
+          jabatan,
         },
       });
-      log(createKakomlekdam);
-    } else {
-      const createWakakomlekdam = await this.prismaService.wakakomlekdam.create(
-        {
-          data: {
-            nama,
-            pasfoto: filename,
-          },
-        },
-      );
-      log(createWakakomlekdam);
-    }
 
-    return {
-      success: true,
-      message: 'Berhasil tambah data ' + jabatan,
-    };
-  }
-
-  async getKepala() {
-    try {
-      const kakomlekdam = await this.prismaService.kakomlekdam.findFirst();
-      const wakakomlekdam = await this.prismaService.wakakomlekdam.findFirst();
+      writeFileSync(absolutePath, buffer);
 
       return {
-        kakomlekdam,
-        wakakomlekdam,
+        success: true,
+        message: 'Berhasil tambah data ' + jabatan,
       };
     } catch (error) {
       log(error);
@@ -152,38 +126,44 @@ export class PejabatService {
     }
   }
 
-  async updateKepala(jabatan: string, updateKepalaDto: UpdateKepalaDto) {
-    const { nama } = updateKepalaDto;
-
-    if (jabatan === 'kakomlekdam') {
-      const updateKakomlekdam = await this.prismaService.kakomlekdam.update({
+  async getAllPimpinan() {
+    try {
+      const kakomlekdam = await this.prismaService.pimpinan.findFirst({
         where: {
-          nomor: 1,
-        },
-        data: {
-          nama,
+          jabatan: 'kakomlekdam',
         },
       });
 
-      log(updateKakomlekdam);
-    } else {
-      const updateWakakomlekdam = await this.prismaService.wakakomlekdam.update(
-        {
-          where: {
-            nomor: 1,
-          },
-          data: {
-            nama,
-          },
+      const wakakomlekdam = await this.prismaService.pimpinan.findFirst({
+        where: {
+          jabatan: 'wakakomlekdam',
         },
-      );
+      });
 
-      log(updateWakakomlekdam);
+      return { kakomlekdam, wakakomlekdam };
+    } catch (error) {
+      log(error);
+      return new InternalServerErrorException(error);
     }
+  }
+
+  async updatePimpinan(jabatan: string, updatePimpinanDto: UpdateKepalaDto) {
+    const { nama } = updatePimpinanDto;
+
+    const update = await this.prismaService.pimpinan.update({
+      where: {
+        jabatan,
+      },
+      data: {
+        nama,
+      },
+    });
+
+    log(update);
 
     return {
       success: true,
-      message: 'Berhasil update ' + jabatan,
+      message: 'Berhasil update ' + update.jabatan,
     };
   }
 
@@ -229,58 +209,31 @@ export class PejabatService {
     }
   }
 
-  async updatePasfotoKepala(jabatan: string, pasfoto: Express.Multer.File) {
+  async updatePasfotoPimpinan(jabatan: string, pasfoto: Express.Multer.File) {
     const { originalname, buffer } = pasfoto;
+
+    const previousData = await this.prismaService.pimpinan.findFirst({
+      where: {
+        jabatan,
+      },
+    });
 
     let filenameToDelete = '';
     let filenameToWrite = '';
 
-    if (jabatan === 'kakomlekdam') {
-      const kakomlekdamPasfoto = await this.prismaService.kakomlekdam.findFirst(
-        {
-          where: {
-            nomor: 1,
-          },
-        },
-      );
+    filenameToWrite = previousData.jabatan + extname(originalname);
+    filenameToDelete = previousData.pasfoto;
 
-      filenameToWrite = 'kakomlekdam' + extname(originalname);
-      filenameToDelete = kakomlekdamPasfoto.pasfoto;
+    const updatedPasfoto = await this.prismaService.pimpinan.update({
+      where: {
+        jabatan,
+      },
+      data: {
+        pasfoto: filenameToWrite,
+      },
+    });
 
-      const updatePasfotoKakomlekdam =
-        await this.prismaService.kakomlekdam.update({
-          where: {
-            nomor: 1,
-          },
-          data: {
-            pasfoto: filenameToWrite,
-          },
-        });
-
-      log(updatePasfotoKakomlekdam);
-    } else {
-      const wakakomlekdamPasfoto =
-        await this.prismaService.wakakomlekdam.findFirst({
-          where: {
-            nomor: 1,
-          },
-        });
-
-      filenameToWrite = 'wakakomlekdam' + extname(originalname);
-      filenameToDelete = wakakomlekdamPasfoto.pasfoto;
-
-      const updatePasfotoWakakomlekdam =
-        await this.prismaService.wakakomlekdam.update({
-          where: {
-            nomor: 1,
-          },
-          data: {
-            pasfoto: filenameToWrite,
-          },
-        });
-
-      log(updatePasfotoWakakomlekdam);
-    }
+    log(updatedPasfoto);
 
     const absolutePathToDelete = join(
       process.cwd(),
@@ -304,8 +257,20 @@ export class PejabatService {
     };
   }
 
-  findAll() {
-    return `This action returns all pejabat`;
+  async findAll() {
+    try {
+      const allPejabat = await this.prismaService.pejabat_satuan.findMany();
+
+      const pimpinan = await this.prismaService.pimpinan.findMany({
+        where: {
+          OR: [{ jabatan: 'kakomlekdam' }, { jabatan: 'wakakomlekdam' }],
+        },
+      });
+
+      return { allPejabat, pimpinan };
+    } catch (error) {
+      return new InternalServerErrorException(error);
+    }
   }
 
   async findOne(nomor: number) {

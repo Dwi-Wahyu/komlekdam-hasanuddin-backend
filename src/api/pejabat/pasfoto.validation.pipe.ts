@@ -5,11 +5,11 @@ import * as path from 'path';
 export class PasfotoValidationPipe implements PipeTransform {
   transform(file: Express.Multer.File) {
     if (!file) {
-      throw new BadRequestException('Tolong sertakan thumbnail');
+      throw new BadRequestException('Tolong sertakan pasfoto');
     }
 
-    if (file.size > 5 * 1024 * 1024) {
-      throw new BadRequestException('Ukuran thumbnail melebihi 5MB');
+    if (file.size > 1024 * 1024 * 1024) {
+      throw new BadRequestException('Ukuran pasfoto melebihi 1GB');
     }
 
     const allowedExtensions = ['.jpg', '.jpeg', '.png', '.gif'];
@@ -17,7 +17,7 @@ export class PasfotoValidationPipe implements PipeTransform {
     const fileExtension = path.extname(file.originalname).toLowerCase();
 
     if (!allowedExtensions.includes(fileExtension)) {
-      throw new BadRequestException('Format thumbnail tidak sesuai');
+      throw new BadRequestException('Format pasfoto tidak sesuai');
     }
 
     return file;

@@ -3,20 +3,24 @@ import { configDotenv } from 'dotenv';
 configDotenv();
 
 import { PrismaClient } from '@prisma/client';
+import { hashSync } from 'bcrypt';
 const prisma = new PrismaClient();
 async function main() {
   const superadminUsername = process.env.SUPERADMIN_USERNAME;
   const superadminPassword = process.env.SUPERADMIN_PASSWORD;
 
-  const createSuperadmin = await prisma.pengguna.upsert({
+  const password = await hashSync(superadminPassword, 8);
+
+  const createSuperadmin = await prisma.user.upsert({
     where: {
       username: superadminUsername,
     },
     update: {},
     create: {
       nama: 'superadmin',
+      role: 'Administrator',
       username: superadminUsername as string,
-      password: superadminPassword as string,
+      password,
     },
   });
 

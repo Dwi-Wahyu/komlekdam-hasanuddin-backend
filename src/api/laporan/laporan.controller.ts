@@ -1,12 +1,26 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  Query,
+  Res,
+} from '@nestjs/common';
 import { LaporanService } from './laporan.service';
 import { CreateLaporanDto } from './dto/create-laporan.dto';
 import { UpdateLaporanDto } from './dto/update-laporan.dto';
+import { Public } from 'src/auth/PublicDecorator';
+import { DatatableQuery } from 'src/common/types/datatable.query.types';
+import { Response } from 'express';
 
-@Controller('laporan')
+@Controller('api/laporan')
 export class LaporanController {
   constructor(private readonly laporanService: LaporanService) {}
 
+  @Public()
   @Post()
   create(@Body() createLaporanDto: CreateLaporanDto) {
     return this.laporanService.create(createLaporanDto);
@@ -15,6 +29,17 @@ export class LaporanController {
   @Get()
   findAll() {
     return this.laporanService.findAll();
+  }
+
+  @Public()
+  @Get('export-excel')
+  exportExcel(@Res() res: Response) {
+    return this.laporanService.exportExcel(res);
+  }
+
+  @Get('data')
+  findData(@Query() query: DatatableQuery) {
+    return this.laporanService.findData(query);
   }
 
   @Get(':id')

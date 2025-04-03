@@ -10,11 +10,17 @@ import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 import { BeritaModule } from './api/berita/berita.module';
 import { LaporanModule } from './api/laporan/laporan.module';
-import { ProgramModule } from './api/program/program.module';
 import { PejabatModule } from './api/pejabat/pejabat.module';
 import { KepalaSatuanLampauModule } from './api/kepala-satuan-lampau/kepala-satuan-lampau.module';
 import { MitraModule } from './api/mitra/mitra.module';
 import { ConfigModule } from '@nestjs/config';
+import { UserModule } from './api/user/user.module';
+import { LitbangModule } from './api/litbang/litbang.module';
+import { LiveYoutubeModule } from './api/live-youtube/live-youtube.module';
+import { CeritaInspiratifModule } from './api/cerita-inspiratif/cerita-inspiratif.module';
+import { JadwalLaguModule } from './api/jadwal-lagu/jadwal-lagu.module';
+import { KegiatanModule } from './api/kegiatan/kegiatan.module';
+import { StatistikModule } from './api/statistik/statistik.module';
 
 @Module({
   imports: [
@@ -23,12 +29,18 @@ import { ConfigModule } from '@nestjs/config';
     }),
     PrismaModule,
     AuthModule,
+    UserModule,
     BeritaModule,
     LaporanModule,
-    ProgramModule,
+    KegiatanModule,
+    LitbangModule,
     PejabatModule,
     KepalaSatuanLampauModule,
     MitraModule,
+    CeritaInspiratifModule,
+    JadwalLaguModule,
+    LiveYoutubeModule,
+    StatistikModule,
     ConfigModule.forRoot(),
   ],
   controllers: [AppController, AuthController],

@@ -11,8 +11,6 @@ import {
   Query,
 } from '@nestjs/common';
 import { KepalaSatuanLampauService } from './kepala-satuan-lampau.service';
-import { CreateKepalaSatuanLampauDto } from './dto/create-kepala-satuan-lampau.dto';
-import { UpdateKepalaSatuanLampauDto } from './dto/update-kepala-satuan-lampau.dto';
 import { PasfotoValidationPipe } from '../pejabat/pasfoto.validation.pipe';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Public } from 'src/auth/PublicDecorator';
@@ -25,15 +23,9 @@ export class KepalaSatuanLampauController {
   ) {}
 
   @Post()
-  @UseInterceptors(FileInterceptor('pasfoto'))
-  create(
-    @UploadedFile(new PasfotoValidationPipe()) pasfoto: Express.Multer.File,
-    @Body() createKepalaSatuanLampauDto: CreateKepalaSatuanLampauDto,
-  ) {
-    return this.kepalaSatuanLampauService.create(
-      pasfoto,
-      createKepalaSatuanLampauDto,
-    );
+  @UseInterceptors(FileInterceptor('foto'))
+  create(@UploadedFile(new PasfotoValidationPipe()) foto: Express.Multer.File) {
+    return this.kepalaSatuanLampauService.create(foto);
   }
 
   @Public()
@@ -42,7 +34,7 @@ export class KepalaSatuanLampauController {
     return this.kepalaSatuanLampauService.findAll();
   }
 
-  @Get('/data')
+  @Get('data')
   findData(@Query() query: DatatableQuery) {
     return this.kepalaSatuanLampauService.findData(query);
   }
@@ -53,14 +45,12 @@ export class KepalaSatuanLampauController {
   }
 
   @Patch(':id')
+  @UseInterceptors(FileInterceptor('foto'))
   update(
     @Param('id') id: string,
-    @Body() updateKepalaSatuanLampauDto: UpdateKepalaSatuanLampauDto,
+    @UploadedFile(new PasfotoValidationPipe()) foto: Express.Multer.File,
   ) {
-    return this.kepalaSatuanLampauService.update(
-      +id,
-      updateKepalaSatuanLampauDto,
-    );
+    return this.kepalaSatuanLampauService.update(+id, foto);
   }
 
   @Delete(':id')

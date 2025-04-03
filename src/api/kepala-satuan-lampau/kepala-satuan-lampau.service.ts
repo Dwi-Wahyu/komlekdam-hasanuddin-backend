@@ -2,7 +2,7 @@ import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { CreateKepalaSatuanLampauDto } from './dto/create-kepala-satuan-lampau.dto';
 import { UpdateKepalaSatuanLampauDto } from './dto/update-kepala-satuan-lampau.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { writeFileSync } from 'fs';
+import { unlinkSync, writeFileSync } from 'fs';
 import { join } from 'path';
 import { log } from 'console';
 import { DatatableQuery } from 'src/common/types/datatable.query.types';
@@ -11,29 +11,23 @@ import { DatatableQuery } from 'src/common/types/datatable.query.types';
 export class KepalaSatuanLampauService {
   constructor(private readonly prismaService: PrismaService) {}
 
-  async create(
-    pasfoto: Express.Multer.File,
-    createKepalaSatuanLampauDto: CreateKepalaSatuanLampauDto,
-  ) {
-    const { originalname, buffer } = pasfoto;
-    const { jabatan, nama, periode } = createKepalaSatuanLampauDto;
+  async create(foto: Express.Multer.File) {
+    const { originalname, buffer } = foto;
 
-    const absolutePasfotoPath = join(
+    const relativeFotoPath = Date.now() + '-' + originalname;
+    const absoluteFotoPath = join(
       process.cwd(),
       'public/profil/kakomlekdam_lampau',
-      originalname,
+      relativeFotoPath,
     );
 
-    writeFileSync(absolutePasfotoPath, buffer);
+    writeFileSync(absoluteFotoPath, buffer);
 
     try {
       const createKakomlekdamLampau =
         await this.prismaService.kakomlekdam_lampau.create({
           data: {
-            nama,
-            jabatan,
-            periode,
-            pasfoto: originalname,
+            fotoPath: relativeFotoPath,
           },
         });
 
@@ -44,6 +38,7 @@ export class KepalaSatuanLampauService {
         message: 'Berhasil tambah data kepala satuan lampau',
       };
     } catch (error) {
+      log(error);
       return new InternalServerErrorException(error);
     }
   }
@@ -51,23 +46,14 @@ export class KepalaSatuanLampauService {
   async findData(query: DatatableQuery) {
     const { per_page, page, search } = query;
 
-    const totalDatas = await this.prismaService.pejabat_satuan.count();
-    const filtered = await this.prismaService.pejabat_satuan.count({
-      where: {
-        nama: {
-          contains: search,
-        },
-      },
-    });
-    const paged = await this.prismaService.pejabat_satuan.findMany({
+    const totalDatas = await this.prismaService.kakomlekdam_lampau.count();
+    const filtered = await this.prismaService.kakomlekdam_lampau.count({});
+    const paged = await this.prismaService.kakomlekdam_lampau.findMany({
       skip: (parseInt(page) - 1) * parseInt(per_page),
       take: parseInt(per_page),
-      where: {
-        nama: {
-          contains: search,
-        },
-      },
     });
+
+    log(paged);
 
     let totalPages = Math.ceil(filtered / parseInt(per_page));
 
@@ -79,19 +65,86 @@ export class KepalaSatuanLampauService {
     };
   }
 
-  findAll() {
-    return `This action returns all kepalaSatuanLampau`;
+  async findAll() {
+    try {
+      const kepalaSatuanLampau =
+        await this.prismaService.kakomlekdam_lampau.findMany();
+
+      return kepalaSatuanLampau;
+    } catch (error) {
+      log(error);
+      throw new InternalServerErrorException(error);
+    }
   }
 
   findOne(id: number) {
     return `This action returns a #${id} kepalaSatuanLampau`;
   }
 
-  update(id: number, updateKepalaSatuanLampauDto: UpdateKepalaSatuanLampauDto) {
-    return `This action updates a #${id} kepalaSatuanLampau`;
+  async update(id: number, foto: Express.Multer.File) {
+    const { originalname, buffer } = foto;
+
+    const relativeFotoPath = Date.now() + '-' + originalname;
+    const absoluteFotoPath = join(
+      process.cwd(),
+      'public/profil/kakomlekdam_lampau',
+      relativeFotoPath,
+    );
+
+    writeFileSync(absoluteFotoPath, buffer);
+
+    const previousData = await this.prismaService.kakomlekdam_lampau.findFirst({
+      where: {
+        id,
+      },
+    });
+
+    const absolutePathToDelete = join(
+      process.cwd(),
+      'public/profil/kakomlekdam_lampau',
+      previousData.fotoPath,
+    );
+
+    unlinkSync(absolutePathToDelete);
+
+    const updateData = await this.prismaService.kakomlekdam_lampau.update({
+      where: {
+        id,
+      },
+      data: {
+        fotoPath: relativeFotoPath,
+      },
+    });
+
+    log(updateData.fotoPath);
+
+    return {
+      success: true,
+      message: 'Berhasil edit foto',
+    };
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} kepalaSatuanLampau`;
+  async remove(id: number) {
+    try {
+      const removeData = await this.prismaService.kakomlekdam_lampau.delete({
+        where: { id },
+      });
+
+      const absoluteFotoPath = join(
+        process.cwd(),
+        'public/profil/kakomlekdam_lampau',
+        removeData.fotoPath,
+      );
+
+      unlinkSync(absoluteFotoPath);
+
+      return {
+        success: true,
+        message: 'Berhasil tambah data kepala satuan lampau',
+      };
+    } catch (error) {
+      log(error);
+      return new InternalServerErrorException(error);
+    }
   }
 }

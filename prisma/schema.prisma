@@ -7,11 +7,22 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model pengunjung {
+  id        Int      @id @default(autoincrement())
+  tanggal   DateTime @unique
+  jumlah    Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
 model laporan {
-  id    String @id @default(uuid())
-  nama  String
-  email String
-  pesan String
+  id            Int      @id @default(autoincrement())
+  nama          String
+  nomor         String
+  email         String
+  pesan         String
+  diajukan_pada String
+  createdAt     DateTime @default(now())
 }
 
 model data_lainnya {
@@ -20,58 +31,112 @@ model data_lainnya {
   value String
 }
 
-model pengguna {
-  id       String @id @default(uuid())
-  username String @unique
-  nama     String
-  password String
-
+model user {
+  id                       Int      @id @default(autoincrement())
+  username                 String   @unique
+  nama                     String   @unique
+  password                 String
+  role                     String   @default("Journalis")
   berita_terakhir_diupdate berita[] @relation(name: "berita_terakhir_diupdate")
+  berita_dipublish         berita[] @relation(name: "berita_dipublish")
 }
 
 model berita {
-  id                       String    @id @default(uuid())
+  id                       Int                @id @default(autoincrement())
   judul                    String
   penulis                  String
   lokasi                   String
   deskripsi                String
   tanggal                  String
   kategori                 String
-  detail                   String    @db.Text
+  detail                   String             @db.Text
   thumbnailPath            String
-  createdAt                DateTime  @default(now())
-  updatedAt                DateTime  @updatedAt()
-  last_updated_by          pengguna? @relation(name: "berita_terakhir_diupdate", fields: [last_updated_by_username], references: [username])
+  createdAt                DateTime           @default(now())
+  updatedAt                DateTime           @updatedAt()
+  last_updated_by          user?              @relation(name: "berita_terakhir_diupdate", fields: [last_updated_by_username], references: [username])
   last_updated_by_username String?
+  deleted                  Boolean            @default(false)
+  like                     Int                @default(0)
+  dislike                  Int                @default(0)
+  komentar                 komentar[]
+  balasan_komentar         balasan_komentar[]
+  dipublish_oleh           user?              @relation(name: "berita_dipublish", fields: [dipublish_oleh_id], references: [id])
+  dipublish_oleh_id        Int?
 }
 
-model program {
-  id            String                @id @default(uuid())
+model komentar {
+  id               Int                @id @default(autoincrement())
+  isi              String
+  nama             String
+  tanggal          String
+  komentar_sebagai String
+  like             Int                @default(0)
+  dislike          Int                @default(0)
+  berita           berita?            @relation(fields: [id_berita], references: [id])
+  id_berita        Int?
+  balasan_komentar balasan_komentar[]
+}
+
+model balasan_komentar {
+  id               Int       @id @default(autoincrement())
+  isi              String
+  nama             String
+  tanggal          String
+  komentar_sebagai String
+  kepada           String
+  like             Int       @default(0)
+  dislike          Int       @default(0)
+  komentar         komentar? @relation(fields: [id_komentar], references: [id])
+  id_komentar      Int?
+  berita           berita?   @relation(fields: [id_berita], references: [id])
+  id_berita        Int?
+}
+
+model kegiatan {
+  id            Int                    @id @default(autoincrement())
   judul         String
   deskripsi     String
   tanggal       String
   kategori      String
-  detail        String                @db.Text
+  detail        String                 @db.Text
   thumbnailPath String
-  dokumentasi   dokumentasi_program[]
+  videoPath     String
+  dokumentasi   dokumentasi_kegiatan[]
 }
 
-model dokumentasi_program {
-  nomor      Int      @id @default(autoincrement())
-  path       String
-  program    program? @relation(fields: [id_program], references: [id])
-  id_program String?
+model dokumentasi_kegiatan {
+  id          Int       @id @default(autoincrement())
+  path        String
+  kegiatan    kegiatan? @relation(fields: [id_kegiatan], references: [id])
+  id_kegiatan Int?
 }
 
-model kakomlekdam {
-  nomor   Int    @id @default(autoincrement())
-  nama    String
-  pasfoto String
+model live_youtube {
+  id            Int    @id @default(autoincrement())
+  link          String
+  thumbnailPath String
 }
 
-model wakakomlekdam {
-  nomor   Int    @id @default(autoincrement())
-  nama    String
+model cerita_inspiratif {
+  id            Int    @id @default(autoincrement())
+  judul         String
+  deskripsi     String
+  thumbnailPath String
+  videoPath     String
+}
+
+model jadwal_lagu {
+  id       Int    @id @default(autoincrement())
+  judul    String
+  laguPath String
+  durasi   String
+  mulai    String
+  selesai  String
+}
+
+model pimpinan {
+  jabatan String @id
+  nama    String @unique
   pasfoto String
 }
 
@@ -82,25 +147,43 @@ model pejabat_satuan {
   jabatan String
 }
 
+model litbang {
+  id            Int                   @id @default(autoincrement())
+  judul         String
+  deskripsi     String
+  tanggal       String
+  detail        String                @db.Text
+  thumbnailPath String
+  videoPath     String
+  penulis       String
+  dokumentasi   dokumentasi_litbang[]
+}
+
+model dokumentasi_litbang {
+  id         Int      @id @default(autoincrement())
+  path       String
+  litbang    litbang? @relation(fields: [id_litbang], references: [id])
+  id_litbang Int?
+}
+
 model kakomlekdam_lampau {
-  id      String @id @default(uuid())
-  nama    String
-  jabatan String
-  periode String
-  pasfoto String
+  id        Int      @id @default(autoincrement())
+  fotoPath  String
+  createdAt DateTime @default(now())
 }
 
 model mitra {
-  nomor       Int                 @id @default(autoincrement())
+  id          Int                 @id @default(autoincrement())
   nama        String
   logoPath    String
   dokumentasi dokumentasi_mitra[]
 }
 
 model dokumentasi_mitra {
-  nomor             Int    @id @default(autoincrement())
+  id                Int    @id @default(autoincrement())
   judul_keterangan  String
   narasi_keterangan String
-  mitra             mitra? @relation(fields: [mitraNomor], references: [nomor])
-  mitraNomor        Int?
+  dokumentasiPath   String
+  mitra             mitra? @relation(fields: [id_mitra], references: [id])
+  id_mitra          Int?
 }
