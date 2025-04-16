@@ -13,7 +13,7 @@ import { LaporanModule } from './api/laporan/laporan.module';
 import { PejabatModule } from './api/pejabat/pejabat.module';
 import { KepalaSatuanLampauModule } from './api/kepala-satuan-lampau/kepala-satuan-lampau.module';
 import { MitraModule } from './api/mitra/mitra.module';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { UserModule } from './api/user/user.module';
 import { LitbangModule } from './api/litbang/litbang.module';
 import { LiveYoutubeModule } from './api/live-youtube/live-youtube.module';

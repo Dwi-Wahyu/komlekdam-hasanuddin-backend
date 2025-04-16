@@ -13,10 +13,14 @@ import * as ExcelJS from 'exceljs';
 import { join } from 'path';
 import { Response } from 'express';
 import { unlinkSync } from 'fs';
+import { TwilioService } from 'nestjs-twilio';
 
 @Injectable()
 export class LaporanService {
-  constructor(private readonly prismaService: PrismaService) {}
+  constructor(
+    private readonly prismaService: PrismaService,
+    private readonly twilioService: TwilioService,
+  ) {}
 
   async create(createLaporanDto: CreateLaporanDto) {
     try {
@@ -35,6 +39,12 @@ export class LaporanService {
       });
 
       log(createLaporan);
+
+      this.twilioService.client.messages.create({
+        body: 'halo',
+        from: '+19895107915',
+        to: '+6289643144013',
+      });
 
       return {
         success: true,

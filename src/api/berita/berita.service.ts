@@ -438,8 +438,6 @@ export class BeritaService {
         tanggal,
       } = updateBeritaDto;
 
-      const thumbnailPath = Date.now() + '-' + thumbnail.originalname;
-
       const berita = await this.prismaService.berita.findUnique({
         where: {
           id,
@@ -459,10 +457,10 @@ export class BeritaService {
         process.cwd(),
         'public',
         'berita/thumbnail',
-        thumbnailPath,
+        thumbnail.originalname,
       );
 
-      writeFileSync(thumbnailPath, thumbnail.buffer);
+      writeFileSync(fileToWrite, thumbnail.buffer);
 
       const updateBerita = await this.prismaService.berita.update({
         where: {
@@ -477,7 +475,7 @@ export class BeritaService {
           tanggal,
           last_updated_by_username: updated_by_username,
           penulis,
-          thumbnailPath,
+          thumbnailPath: thumbnail.originalname,
         },
       });
 
