@@ -46,7 +46,7 @@ model berita {
   judul                    String
   penulis                  String
   lokasi                   String
-  deskripsi                String
+  deskripsi                String             @db.Text
   tanggal                  String
   kategori                 String
   detail                   String             @db.Text
