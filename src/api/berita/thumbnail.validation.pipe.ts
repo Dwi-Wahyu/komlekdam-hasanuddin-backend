@@ -8,8 +8,8 @@ export class ThumbnailValidationPipe implements PipeTransform {
       throw new BadRequestException('Tolong sertakan thumbnail');
     }
 
-    if (file.size > 5 * 1024 * 1024) {
-      throw new BadRequestException('Ukuran thumbnail melebihi 5MB');
+    if (file.size > 1024 * 1024 * 1024) {
+      throw new BadRequestException('Ukuran thumbnail melebihi 1GB');
     }
 
     const allowedExtensions = ['.jpg', '.jpeg', '.png', '.gif'];
