@@ -40,12 +40,6 @@ export class LaporanService {
 
       log(createLaporan);
 
-      this.twilioService.client.messages.create({
-        body: 'halo',
-        from: '+19895107915',
-        to: '+6289643144013',
-      });
-
       return {
         success: true,
         message: 'Berhasil membuat laporan',
