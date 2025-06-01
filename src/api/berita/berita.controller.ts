@@ -9,6 +9,7 @@ import {
   UseInterceptors,
   UploadedFile,
   Query,
+  Put,
 } from '@nestjs/common';
 import { BeritaService } from './berita.service';
 import { CreateBeritaDto } from './dto/create-berita.dto';
@@ -89,6 +90,12 @@ export class BeritaController {
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.beritaService.findOne(+id);
+  }
+
+  @Public()
+  @Put(':id/bagikan')
+  tambahkanDibagikan(@Param('id') id: string) {
+    return this.beritaService.tambahkanDibagikan(+id);
   }
 
   @Patch(':id')

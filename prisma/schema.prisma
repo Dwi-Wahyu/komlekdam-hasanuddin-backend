@@ -53,6 +53,8 @@ model berita {
   thumbnailPath            String
   createdAt                DateTime           @default(now())
   updatedAt                DateTime           @updatedAt()
+  jumlahPengunjung         Int                @default(0)
+  jumlahDibagikan          Int                @default(0)
   last_updated_by          user?              @relation(name: "berita_terakhir_diupdate", fields: [last_updated_by_username], references: [username])
   last_updated_by_username String?
   deleted                  Boolean            @default(false)

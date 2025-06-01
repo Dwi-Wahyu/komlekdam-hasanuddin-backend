@@ -2,6 +2,7 @@ import {
   BadRequestException,
   Injectable,
   InternalServerErrorException,
+  NotFoundException,
 } from '@nestjs/common';
 import { CreateBeritaDto } from './dto/create-berita.dto';
 import { UpdateBeritaDto } from './dto/update-berita.dto';
@@ -290,16 +291,32 @@ export class BeritaService {
 
   async findOne(id: number) {
     try {
-      const berita = await this.prismaService.berita.findUnique({
-        where: {
-          id,
-        },
+      const berita = await this.prismaService.$transaction(async (prisma) => {
+        const existingBerita = await prisma.berita.findUnique({
+          where: { id },
+        });
+
+        if (!existingBerita) {
+          throw new NotFoundException(`Berita dengan ID ${id} tidak ditemukan`);
+        }
+
+        return prisma.berita.update({
+          where: { id },
+          data: {
+            jumlahPengunjung: {
+              increment: 1,
+            },
+          },
+        });
       });
 
       return berita;
     } catch (error) {
-      log(error);
-      return new InternalServerErrorException(error);
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+
+      throw new InternalServerErrorException('Gagal memproses permintaan');
     }
   }
 
@@ -528,5 +545,22 @@ export class BeritaService {
       log(error);
       return new InternalServerErrorException(error);
     }
+  }
+
+  async tambahkanDibagikan(id: number) {
+    const updateBerita = await this.prismaService.berita.update({
+      where: {
+        id,
+      },
+      data: {
+        jumlahDibagikan: {
+          increment: 1,
+        },
+      },
+    });
+
+    return {
+      success: true,
+    };
   }
 }
