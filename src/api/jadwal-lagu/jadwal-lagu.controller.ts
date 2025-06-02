@@ -31,20 +31,21 @@ export class JadwalLaguController {
     return this.jadwalLaguService.create(lagu, createJadwalLaguDto);
   }
 
-  @Get('data')
-  findData(@Query() query: DatatableQuery) {
-    return this.jadwalLaguService.findData(query);
-  }
-
+  @Public()
   @Get()
-  findAll() {
-    return this.jadwalLaguService.findAll();
+  findNow() {
+    return this.jadwalLaguService.findNow();
   }
 
   @Public()
-  @Get('sekarang')
-  findNow() {
-    return this.jadwalLaguService.findNow();
+  @Get('mode/streaming')
+  getStreamingMode() {
+    return this.jadwalLaguService.getStreamingMode();
+  }
+
+  @Get('data')
+  findData(@Query() query: DatatableQuery) {
+    return this.jadwalLaguService.findData(query);
   }
 
   @Get(':id')
@@ -58,6 +59,11 @@ export class JadwalLaguController {
     @Body() updateJadwalLaguDto: UpdateJadwalLaguDto,
   ) {
     return this.jadwalLaguService.update(+id, updateJadwalLaguDto);
+  }
+
+  @Get('toggle/radio')
+  toggleRadio() {
+    return this.jadwalLaguService.toggleRadio();
   }
 
   @Post('ganti-lagu/:id')

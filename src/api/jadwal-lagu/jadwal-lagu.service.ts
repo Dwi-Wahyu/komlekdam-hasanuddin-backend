@@ -91,10 +91,6 @@ export class JadwalLaguService {
     };
   }
 
-  findAll() {
-    return `This action returns all jadwalLagu`;
-  }
-
   async findOne(id: number) {
     try {
       const jadwalLagu = await this.prismaService.jadwal_lagu.findUnique({
@@ -162,6 +158,12 @@ export class JadwalLaguService {
     try {
       const allJadwal = await this.prismaService.jadwal_lagu.findMany();
 
+      const modeStreaming = await this.prismaService.data_lainnya.findFirst({
+        where: {
+          label: 'streaming-mode-radio',
+        },
+      });
+
       const sekarang = moment();
 
       let jadwalSekarang = {};
@@ -177,7 +179,7 @@ export class JadwalLaguService {
         }
       }
 
-      return { jadwalSekarang, adaJadwal };
+      return { jadwalSekarang, adaJadwal, modeStreaming };
     } catch (error) {
       log(error);
       return new InternalServerErrorException(error);
@@ -247,5 +249,50 @@ export class JadwalLaguService {
       log(error);
       return new InternalServerErrorException(error);
     }
+  }
+
+  async getStreamingMode() {
+    const result = await this.prismaService.data_lainnya.findFirst({
+      where: {
+        label: 'streaming-mode-radio',
+      },
+    });
+
+    return { result };
+  }
+
+  async toggleRadio() {
+    const existing = await this.prismaService.data_lainnya.findFirst({
+      where: {
+        label: 'streaming-mode-radio',
+      },
+    });
+
+    if (!existing) {
+      const create = await this.prismaService.data_lainnya.create({
+        data: {
+          label: 'streaming-mode-radio',
+          value: 'true',
+        },
+      });
+
+      return { result: create };
+    }
+
+    const value = existing.value === 'true' ? 'false' : 'true';
+
+    const result = await this.prismaService.data_lainnya.update({
+      where: {
+        label: 'streaming-mode-radio',
+      },
+      data: {
+        value,
+      },
+    });
+
+    return {
+      success: true,
+      result,
+    };
   }
 }
