@@ -114,6 +114,7 @@ export class LitbangController {
     return this.litbangService.findAll();
   }
 
+  @Public()
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.litbangService.findOne(+id);
