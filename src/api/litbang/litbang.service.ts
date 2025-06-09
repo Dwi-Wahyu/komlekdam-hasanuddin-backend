@@ -19,46 +19,11 @@ export class LitbangService {
     createLitbangDto: CreateLitbangDto,
   ) {
     try {
-      const { originalname: thumbnailOriginalName, buffer: thumbnailBuffer } =
-        thumbnail[0];
-      const { originalname: videoOriginalName, buffer: videoBuffer } = video[0];
       const { judul, deskripsi, detail, tanggal, penulis } = createLitbangDto;
 
-      const thumbnailPath = Date.now() + '-' + thumbnailOriginalName;
-      const videoPath = Date.now() + '-' + videoOriginalName;
-      const absoluteThumbnailPath = join(
-        process.cwd(),
-        'public/litbang/thumbnail',
-        thumbnailPath,
-      );
-      const absoluteVideoPath = join(
-        process.cwd(),
-        'public/litbang/video',
-        videoPath,
-      );
-
-      writeFileSync(absoluteThumbnailPath, thumbnailBuffer);
-      writeFileSync(absoluteVideoPath, videoBuffer);
-
-      const dokumentasiPath = [];
-
-      for (const each of dokumentasi) {
-        const {
-          buffer: dokumentasiBuffer,
-          originalname: dokumentasiOriginalName,
-        } = each;
-
-        const dokumentasiName = Date.now() + '-' + dokumentasiOriginalName;
-        const absoluteDokumentasiPath = join(
-          process.cwd(),
-          'public/litbang/dokumentasi',
-          dokumentasiName,
-        );
-
-        writeFileSync(absoluteDokumentasiPath, dokumentasiBuffer);
-
-        dokumentasiPath.push(dokumentasiName);
-      }
+      const thumbnailPath = thumbnail[0].filename;
+      const videoPath = video[0].filename;
+      const dokumentasiPath = dokumentasi.map((file) => file.filename);
 
       const createLitbang = await this.prismaService.litbang.create({
         data: {
@@ -71,7 +36,7 @@ export class LitbangService {
           videoPath,
           dokumentasi: {
             createMany: {
-              data: dokumentasiPath.map((temp) => ({ path: temp })),
+              data: dokumentasiPath.map((path) => ({ path })),
             },
           },
         },
@@ -121,7 +86,9 @@ export class LitbangService {
 
   async findAll() {
     try {
-      const allLitbang = await this.prismaService.litbang.findMany();
+      const allLitbang = await this.prismaService.litbang.findMany({
+        take: 4,
+      });
 
       return allLitbang;
     } catch (error) {
@@ -207,39 +174,28 @@ export class LitbangService {
   }
 
   async updateThumbnail(id: number, thumbnail: Express.Multer.File) {
-    const { originalname, buffer } = thumbnail;
-
     try {
       const litbang = await this.prismaService.litbang.findFirst({
         where: { id },
       });
 
-      const thumbnailPath = Date.now() + '-' + originalname;
+      // Hapus file lama jika ada
+      if (litbang.thumbnailPath) {
+        const oldFilePath = join(
+          process.cwd(),
+          'public/litbang/thumbnail',
+          litbang.thumbnailPath,
+        );
+        unlinkSync(oldFilePath); // Hapus file lama
+      }
 
-      const fileToDelete = join(
-        process.cwd(),
-        'public/litbang/thumbnail',
-        litbang.thumbnailPath,
-      );
-      const fileToWrite = join(
-        process.cwd(),
-        'public/litbang/thumbnail',
-        thumbnailPath,
-      );
-
-      unlinkSync(fileToDelete);
-      writeFileSync(fileToWrite, buffer);
-
-      const updateThumbnailLitbang = await this.prismaService.litbang.update({
-        where: {
-          id,
-        },
+      // Update path file baru di database (thumbnail.filename sudah di-generate oleh Multer)
+      await this.prismaService.litbang.update({
+        where: { id },
         data: {
-          thumbnailPath,
+          thumbnailPath: thumbnail.filename, // Gunakan nama file yang sudah disimpan
         },
       });
-
-      log(updateThumbnailLitbang);
 
       return {
         success: true,
@@ -251,39 +207,28 @@ export class LitbangService {
   }
 
   async updateVideo(id: number, video: Express.Multer.File) {
-    const { originalname, buffer } = video;
-
     try {
       const litbang = await this.prismaService.litbang.findFirst({
         where: { id },
       });
 
-      const videoPath = Date.now() + '-' + originalname;
+      // Hapus file lama jika ada
+      if (litbang.videoPath) {
+        const oldFilePath = join(
+          process.cwd(),
+          'public/litbang/video',
+          litbang.videoPath,
+        );
+        unlinkSync(oldFilePath); // Hapus file lama
+      }
 
-      const fileToDelete = join(
-        process.cwd(),
-        'public/litbang/video',
-        litbang.videoPath,
-      );
-      const fileToWrite = join(
-        process.cwd(),
-        'public/litbang/video',
-        videoPath,
-      );
-
-      unlinkSync(fileToDelete);
-      writeFileSync(fileToWrite, buffer);
-
-      const updateVideoLitbang = await this.prismaService.litbang.update({
-        where: {
-          id,
-        },
+      // Update path file baru di database
+      await this.prismaService.litbang.update({
+        where: { id },
         data: {
-          videoPath,
+          videoPath: video.filename, // Gunakan nama file yang sudah disimpan
         },
       });
-
-      log(updateVideoLitbang);
 
       return {
         success: true,
@@ -295,24 +240,12 @@ export class LitbangService {
   }
 
   async createDokumentasi(id_litbang: number, gambar: Express.Multer.File) {
-    const { originalname, buffer } = gambar;
-
     try {
-      const relativeDokumentasiPath = Date.now() + '-' + originalname;
-
-      const absolutePasfotoPath = join(
-        process.cwd(),
-        'public/litbang/dokumentasi',
-        relativeDokumentasiPath,
-      );
-
-      writeFileSync(absolutePasfotoPath, buffer);
-
       const createDokumentasiProgram =
         await this.prismaService.dokumentasi_litbang.create({
           data: {
             id_litbang,
-            path: relativeDokumentasiPath,
+            path: gambar.filename, // Gunakan nama file yang sudah disimpan
           },
         });
 

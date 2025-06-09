@@ -10,6 +10,8 @@ import {
   UseInterceptors,
   Query,
   UploadedFile,
+  ParseIntPipe,
+  DefaultValuePipe,
 } from '@nestjs/common';
 import { LitbangService } from './litbang.service';
 import { CreateLitbangDto } from './dto/create-litbang.dto';
@@ -25,6 +27,7 @@ import { UpdateLitbangValidationPipe } from './update.litbang.validation.pipe';
 import { Public } from 'src/auth/PublicDecorator';
 import { ThumbnailValidationPipe } from '../berita/thumbnail.validation.pipe';
 import { VideoValidationPipe } from '../kegiatan/video.validation.pipe';
+import { diskStorage } from 'multer';
 
 @Controller('api/litbang')
 export class LitbangController {
@@ -32,11 +35,38 @@ export class LitbangController {
 
   @Post()
   @UseInterceptors(
-    FileFieldsInterceptor([
-      { name: 'thumbnail', maxCount: 1 },
-      { name: 'video', maxCount: 1 },
-      { name: 'dokumentasi', maxCount: 5 },
-    ]),
+    FileFieldsInterceptor(
+      [
+        { name: 'thumbnail', maxCount: 1 },
+        { name: 'video', maxCount: 1 },
+        { name: 'dokumentasi', maxCount: 5 },
+      ],
+      {
+        storage: diskStorage({
+          destination: (req, file, cb) => {
+            let uploadPath: string;
+
+            // Tentukan folder tujuan berdasarkan jenis file
+            if (file.fieldname === 'thumbnail') {
+              uploadPath = './public/litbang/thumbnail';
+            } else if (file.fieldname === 'video') {
+              uploadPath = './public/litbang/video';
+            } else if (file.fieldname === 'dokumentasi') {
+              uploadPath = './public/litbang/dokumentasi';
+            } else {
+              uploadPath = './public/uploads'; // Fallback
+            }
+
+            cb(null, uploadPath);
+          },
+          filename: (req, file, cb) => {
+            // Generate nama file unik (timestamp + nama asli)
+            const uniqueName = Date.now() + '-' + file.originalname;
+            cb(null, uniqueName);
+          },
+        }),
+      },
+    ),
   )
   create(
     @UploadedFiles(new LitbangValidationPipe())
@@ -71,7 +101,17 @@ export class LitbangController {
   }
 
   @Post('ganti-thumbnail/:id')
-  @UseInterceptors(FileInterceptor('thumbnail'))
+  @UseInterceptors(
+    FileInterceptor('thumbnail', {
+      storage: diskStorage({
+        destination: './public/litbang/thumbnail', // Folder untuk thumbnail
+        filename: (req, file, cb) => {
+          const uniqueName = Date.now() + '-' + file.originalname;
+          cb(null, uniqueName); // Format: timestamp-nama-file
+        },
+      }),
+    }),
+  )
   updateThumbnail(
     @UploadedFile(new ThumbnailValidationPipe()) thumbnail: Express.Multer.File,
     @Param('id') id: string,
@@ -80,7 +120,17 @@ export class LitbangController {
   }
 
   @Post('ganti-video/:id')
-  @UseInterceptors(FileInterceptor('video'))
+  @UseInterceptors(
+    FileInterceptor('video', {
+      storage: diskStorage({
+        destination: './public/litbang/video', // Folder untuk video
+        filename: (req, file, cb) => {
+          const uniqueName = Date.now() + '-' + file.originalname;
+          cb(null, uniqueName); // Format: timestamp-nama-file
+        },
+      }),
+    }),
+  )
   updateVideo(
     @UploadedFile(new VideoValidationPipe()) video: Express.Multer.File,
     @Param('id') id: string,
@@ -89,7 +139,18 @@ export class LitbangController {
   }
 
   @Post('dokumentasi/:id')
-  @UseInterceptors(FileInterceptor('gambar'))
+  @UseInterceptors(
+    FileInterceptor('gambar', {
+      storage: diskStorage({
+        destination: './public/litbang/dokumentasi', // Folder penyimpanan
+        filename: (req, file, cb) => {
+          // Generate nama file unik: timestamp + nama asli
+          const uniqueName = Date.now() + '-' + file.originalname;
+          cb(null, uniqueName);
+        },
+      }),
+    }),
+  )
   createDokumentasi(
     @UploadedFile(new DokumentasiValidationPipe()) gambar: Express.Multer.File,
     @Param('id') id: string,

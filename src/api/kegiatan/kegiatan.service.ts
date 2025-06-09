@@ -22,44 +22,10 @@ export class KegiatanService {
     try {
       const { judul, kategori, detail, tanggal, deskripsi } = createKegiatanDto;
 
-      const videoPath = Date.now() + '-' + video[0].originalname;
-      const thumbnailPath = Date.now() + '-' + thumbnail[0].originalname;
-
-      const videoAbsolutePath = join(
-        process.cwd(),
-        'public/kegiatan',
-        kategori,
-        'video',
-        videoPath,
-      );
-      const thumbnailAbsolutePath = join(
-        process.cwd(),
-        'public/kegiatan',
-        kategori,
-        'thumbnail',
-        thumbnailPath,
-      );
-
-      writeFileSync(videoAbsolutePath, video[0].buffer);
-      writeFileSync(thumbnailAbsolutePath, thumbnail[0].buffer);
-
-      const dokumentasiPath = [];
-
-      for (const each of dokumentasi) {
-        const eachPath = Date.now() + '-' + each.originalname;
-
-        const dokumentasiAbsolutePath = join(
-          process.cwd(),
-          'public/kegiatan',
-          kategori,
-          'dokumentasi',
-          eachPath,
-        );
-
-        writeFileSync(dokumentasiAbsolutePath, each.buffer);
-
-        dokumentasiPath.push(eachPath);
-      }
+      // Multer has already saved the files, we just need the paths
+      const videoPath = video[0].filename;
+      const thumbnailPath = thumbnail[0].filename;
+      const dokumentasiPath = dokumentasi.map((file) => file.filename);
 
       const createProgram = await this.prismaService.kegiatan.create({
         data: {
@@ -264,39 +230,21 @@ export class KegiatanService {
     gambar: Express.Multer.File,
     createDokumentasiProgramDto: { kategori: string },
   ) {
-    const { originalname, buffer } = gambar;
-    const { kategori } = createDokumentasiProgramDto;
-
     try {
-      const relativeDokumentasiPath = Date.now() + '-' + originalname;
-
-      const absolutePasfotoPath = join(
-        process.cwd(),
-        'public/kegiatan',
-        kategori,
-        'dokumentasi',
-        relativeDokumentasiPath,
-      );
-
-      writeFileSync(absolutePasfotoPath, buffer);
-
-      const createDokumentasiKegiatan =
-        await this.prismaService.dokumentasi_kegiatan.create({
-          data: {
-            id_kegiatan,
-            path: relativeDokumentasiPath,
-          },
-        });
-
-      log(createDokumentasiKegiatan);
+      // File is automatically saved by Multer, just save the path
+      await this.prismaService.dokumentasi_kegiatan.create({
+        data: {
+          id_kegiatan,
+          path: gambar.filename,
+        },
+      });
 
       return {
         success: true,
         message: 'Berhasil tambah dokumentasi',
       };
     } catch (error) {
-      log(error);
-      return new InternalServerErrorException(error);
+      throw new InternalServerErrorException(error.message);
     }
   }
 
@@ -305,51 +253,37 @@ export class KegiatanService {
     thumbnail: Express.Multer.File,
     body: CreateDokumentasiKegiatanDto,
   ) {
-    const { originalname, buffer } = thumbnail;
     const { kategori } = body;
 
     try {
-      const kegiatan = await this.prismaService.kegiatan.findFirst({
+      const kegiatan = await this.prismaService.kegiatan.findUniqueOrThrow({
         where: { id },
       });
 
-      const thumbnailPath = Date.now() + '-' + originalname;
+      // Delete old file if exists
+      if (kegiatan.thumbnailPath) {
+        const oldPath = join(
+          process.cwd(),
+          'public/kegiatan',
+          kategori,
+          'thumbnail',
+          kegiatan.thumbnailPath,
+        );
+        unlinkSync(oldPath);
+      }
 
-      const fileToDelete = join(
-        process.cwd(),
-        'public/kegiatan',
-        kategori,
-        'thumbnail',
-        kegiatan.thumbnailPath,
-      );
-      const fileToWrite = join(
-        process.cwd(),
-        'public/kegiatan',
-        kategori,
-        'thumbnail',
-        thumbnailPath,
-      );
-
-      unlinkSync(fileToDelete);
-      writeFileSync(fileToWrite, buffer);
-
-      const updateThumbnailKegiatan = await this.prismaService.kegiatan.update({
-        where: {
-          id,
-        },
-        data: {
-          thumbnailPath,
-        },
+      // Update database with new filename (automatically saved by Multer)
+      await this.prismaService.kegiatan.update({
+        where: { id },
+        data: { thumbnailPath: thumbnail.filename },
       });
-
-      log(updateThumbnailKegiatan);
 
       return {
         success: true,
         message: 'Berhasil update thumbnail',
       };
     } catch (error) {
-      return new InternalServerErrorException(error);
+      throw new InternalServerErrorException(error.message);
     }
   }
 
@@ -358,51 +292,37 @@ export class KegiatanService {
     video: Express.Multer.File,
     body: CreateDokumentasiKegiatanDto,
   ) {
-    const { originalname, buffer } = video;
     const { kategori } = body;
 
     try {
-      const kegiatan = await this.prismaService.kegiatan.findFirst({
+      const kegiatan = await this.prismaService.kegiatan.findUniqueOrThrow({
         where: { id },
       });
 
-      const videoPath = Date.now() + '-' + originalname;
+      // Delete old file if exists
+      if (kegiatan.videoPath) {
+        const oldPath = join(
+          process.cwd(),
+          'public/kegiatan',
+          kategori,
+          'video',
+          kegiatan.videoPath,
+        );
+        unlinkSync(oldPath);
+      }
 
-      const fileToDelete = join(
-        process.cwd(),
-        'public/kegiatan',
-        kategori,
-        'video',
-        kegiatan.videoPath,
-      );
-      const fileToWrite = join(
-        process.cwd(),
-        'public/kegiatan',
-        kategori,
-        'video',
-        videoPath,
-      );
-
-      unlinkSync(fileToDelete);
-      writeFileSync(fileToWrite, buffer);
-
-      const updateVideoKegiatan = await this.prismaService.kegiatan.update({
-        where: {
-          id,
-        },
-        data: {
-          videoPath,
-        },
+      // Update database with new filename
+      await this.prismaService.kegiatan.update({
+        where: { id },
+        data: { videoPath: video.filename },
       });
-
-      log(updateVideoKegiatan);
 
       return {
         success: true,
         message: 'Berhasil update video',
       };
     } catch (error) {
-      return new InternalServerErrorException(error);
+      throw new InternalServerErrorException(error.message);
     }
   }
 
