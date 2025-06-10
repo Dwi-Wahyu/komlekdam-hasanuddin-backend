@@ -291,26 +291,24 @@ export class BeritaService {
 
   async findOne(id: number) {
     try {
-      const berita = await this.prismaService.$transaction(async (prisma) => {
-        const existingBerita = await prisma.berita.findUnique({
-          where: { id },
-        });
-
-        if (!existingBerita) {
-          throw new NotFoundException(`Berita dengan ID ${id} tidak ditemukan`);
-        }
-
-        return prisma.berita.update({
-          where: { id },
-          data: {
-            jumlahPengunjung: {
-              increment: 1,
-            },
-          },
-        });
+      const existingBerita = await this.prismaService.berita.findUnique({
+        where: { id },
       });
 
-      return berita;
+      if (!existingBerita) {
+        return new NotFoundException(`Berita dengan ID ${id} tidak ditemukan`);
+      }
+
+      await this.prismaService.berita.update({
+        where: { id },
+        data: {
+          jumlahPengunjung: {
+            increment: 1,
+          },
+        },
+      });
+
+      return existingBerita;
     } catch (error) {
       if (error instanceof NotFoundException) {
         throw error;
