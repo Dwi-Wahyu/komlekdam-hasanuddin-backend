@@ -21,6 +21,7 @@ import { CeritaInspiratifModule } from './api/cerita-inspiratif/cerita-inspirati
 import { JadwalLaguModule } from './api/jadwal-lagu/jadwal-lagu.module';
 import { KegiatanModule } from './api/kegiatan/kegiatan.module';
 import { StatistikModule } from './api/statistik/statistik.module';
+import { StandarLayananModule } from './api/standar-layanan/standar-layanan.module';
 
 @Module({
   imports: [
@@ -41,6 +42,7 @@ import { StatistikModule } from './api/statistik/statistik.module';
     JadwalLaguModule,
     LiveYoutubeModule,
     StatistikModule,
+    StandarLayananModule,
     ConfigModule.forRoot(),
   ],
   controllers: [AppController, AuthController],
