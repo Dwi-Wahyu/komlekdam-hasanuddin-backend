@@ -23,6 +23,7 @@ import { DatatableQuery } from 'src/common/types/datatable.query.types';
 import { ThumbnailValidationPipe } from '../berita/thumbnail.validation.pipe';
 import { Public } from 'src/auth/PublicDecorator';
 import { VideoValidationPipe } from '../kegiatan/video.validation.pipe';
+import { CeritaInspiratifStorage } from './cerita-inspiratif.storage';
 
 @Controller('api/cerita-inspiratif')
 export class CeritaInspiratifController {
@@ -31,12 +32,7 @@ export class CeritaInspiratifController {
   ) {}
 
   @Post()
-  @UseInterceptors(
-    FileFieldsInterceptor([
-      { name: 'thumbnail', maxCount: 1 },
-      { name: 'video', maxCount: 1 },
-    ]),
-  )
+  @UseInterceptors(CeritaInspiratifStorage)
   create(
     @UploadedFiles(new CeritaInspiratifValidationPipe())
     files: {

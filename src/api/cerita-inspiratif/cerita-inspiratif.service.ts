@@ -19,24 +19,8 @@ export class CeritaInspiratifService {
     try {
       const { judul, deskripsi } = createCeritaInspiratifDto;
 
-      const videoPath = Date.now() + '-' + video.originalname;
-      const thumbnailPath = Date.now() + '-' + thumbnail.originalname;
-
-      const videoAbsolutePath = join(
-        process.cwd(),
-        'public',
-        'cerita-inspiratif/video',
-        videoPath,
-      );
-      const thumbnailAbsolutePath = join(
-        process.cwd(),
-        'public',
-        'cerita-inspiratif/thumbnail',
-        thumbnailPath,
-      );
-
-      writeFileSync(videoAbsolutePath, video.buffer);
-      writeFileSync(thumbnailAbsolutePath, thumbnail.buffer);
+      const thumbnailPath = thumbnail.filename;
+      const videoPath = video.filename;
 
       const createCeritaInspiratif =
         await this.prismaService.cerita_inspiratif.create({
@@ -56,7 +40,9 @@ export class CeritaInspiratifService {
       };
     } catch (error) {
       log(error);
-      return new InternalServerErrorException(error);
+      throw new InternalServerErrorException(
+        'Gagal menyimpan cerita inspiratif',
+      );
     }
   }
 
