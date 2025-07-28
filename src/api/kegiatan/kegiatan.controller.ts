@@ -25,7 +25,6 @@ import { VideoValidationPipe } from './video.validation.pipe';
 import { DatatableQuery } from 'src/common/types/datatable.query.types';
 import { Public } from 'src/auth/PublicDecorator';
 import { DokumentasiValidationPipe } from '../mitra/dokumentasi.validation.pipe';
-import { log } from 'console';
 import { join } from 'path';
 import { diskStorage } from 'multer';
 

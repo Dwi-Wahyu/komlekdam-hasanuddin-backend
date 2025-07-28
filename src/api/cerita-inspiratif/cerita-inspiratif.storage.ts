@@ -12,11 +12,7 @@ export const CeritaInspiratifStorage = FileFieldsInterceptor(
       destination: (req, file, cb) => {
         let subfolder: string;
 
-        if (file.fieldname === 'thumbnail') {
-          subfolder = 'thumbnail';
-        } else if (file.fieldname === 'video') {
-          subfolder = 'video';
-        }
+        subfolder = file.fieldname;
 
         const fullPath = join(
           process.cwd(),
