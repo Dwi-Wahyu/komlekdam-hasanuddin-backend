@@ -97,10 +97,10 @@ model balasan_komentar {
 model kegiatan {
   id            Int                    @id @default(autoincrement())
   judul         String
-  deskripsi     String
+  deskripsi     String                 @db.Text
   tanggal       String
   kategori      String
-  detail        String                 @db.Text
+  detail        String                 @db.LongText
   thumbnailPath String
   videoPath     String
   dokumentasi   dokumentasi_kegiatan[]
@@ -152,9 +152,9 @@ model pejabat_satuan {
 model litbang {
   id            Int                   @id @default(autoincrement())
   judul         String
-  deskripsi     String
+  deskripsi     String                @db.Text
   tanggal       String
-  detail        String                @db.Text
+  detail        String                @db.LongText
   thumbnailPath String
   videoPath     String
   penulis       String
